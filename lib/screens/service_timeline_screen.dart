@@ -67,14 +67,17 @@ class _ServiceTimelineScreenState extends ConsumerState<ServiceTimelineScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search by service type, description, or vehicle...',
-                hintStyle: const TextStyle(color: Color(0xFF8B95A5)),
+                hintStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF2E7CF6)),
                 suffixIcon:
                     _searchQuery.isNotEmpty
                         ? IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.clear,
-                            color: Color(0xFF8B95A5),
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           onPressed: () {
                             setState(() {
@@ -85,7 +88,7 @@ class _ServiceTimelineScreenState extends ConsumerState<ServiceTimelineScreen> {
                         )
                         : null,
                 filled: true,
-                fillColor: const Color(0xFF1A1F28),
+                fillColor: Theme.of(context).colorScheme.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -134,260 +137,306 @@ class _ServiceTimelineScreenState extends ConsumerState<ServiceTimelineScreen> {
                 itemBuilder: (context, index) {
                   final service = filteredRecords[index];
                   final vehicle = hiveService.getVehicleById(service.vehicleId);
+                  final isFirst = index == 0;
+                  final isLast = index == filteredRecords.length - 1;
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
+                  return IntrinsicHeight(
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Timeline indicator
-                        Column(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color:
-                                    vehicle != null
-                                        ? Color(vehicle.color)
-                                        : const Color(0xFF2E7CF6),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.build,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                            if (index < filteredRecords.length - 1)
+                        SizedBox(
+                          width: 24,
+                          child: Column(
+                            children: [
                               Container(
                                 width: 2,
-                                height: 60,
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                color: const Color(
-                                  0xFF2E7CF6,
-                                ).withValues(alpha: 0.3),
+                                height: 20,
+                                color:
+                                    isFirst
+                                        ? Colors.transparent
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.outlineVariant,
                               ),
-                          ],
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color:
+                                      vehicle != null
+                                          ? Color(vehicle.color)
+                                          : Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (vehicle != null
+                                              ? Color(vehicle.color)
+                                              : Theme.of(
+                                                context,
+                                              ).colorScheme.primary)
+                                          .withValues(alpha: 0.4),
+                                      blurRadius: 8,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  width: 2,
+                                  color:
+                                      isLast
+                                          ? Colors.transparent
+                                          : Theme.of(
+                                            context,
+                                          ).colorScheme.outlineVariant,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(width: 16),
                         // Content card
                         Expanded(
-                          child: Card(
-                            margin: EdgeInsets.zero,
-                            color: const Color(0xFF1A1F28),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Service Type and Date
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          service.serviceType,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      Text(
-                                        DateFormat(
-                                          'MMM dd, yyyy',
-                                        ).format(service.date),
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF8B95A5),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-
-                                  // Vehicle Info
-                                  if (vehicle != null)
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: Card(
+                              margin: EdgeInsets.zero,
+                              color: Theme.of(context).colorScheme.surface,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Service Type and Date
                                     Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Icon(
-                                          Icons.directions_car,
-                                          size: 16,
-                                          color: Color(0xFF2E7CF6),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${vehicle.year} ${vehicle.make} ${vehicle.model}',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xFF8B95A5),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  const SizedBox(height: 8),
-
-                                  // Description
-                                  if (service.description.isNotEmpty)
-                                    Text(
-                                      service.description,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Color(0xFF8B95A5),
-                                      ),
-                                    ),
-
-                                  // Service Location
-                                  if (service.serviceLocation != null &&
-                                      service.serviceLocation!.isNotEmpty) ...[
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on,
-                                          size: 16,
-                                          color: Color(0xFF2E7CF6),
-                                        ),
-                                        const SizedBox(width: 4),
                                         Expanded(
                                           child: Text(
-                                            service.serviceLocation!,
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              color: Color(0xFF8B95A5),
+                                            service.serviceType,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  Theme.of(
+                                                    context,
+                                                  ).colorScheme.onSurface,
                                             ),
+                                          ),
+                                        ),
+                                        Text(
+                                          DateFormat(
+                                            'MMM dd, yyyy',
+                                          ).format(service.date),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurfaceVariant,
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ],
-                                  const SizedBox(height: 12),
+                                    const SizedBox(height: 12),
 
-                                  // Cost and Odometer
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      // Cost
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF252D38),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.payments,
-                                              size: 16,
-                                              color: Color(0xFF2E7CF6),
+                                    // Vehicle Info
+                                    if (vehicle != null) ...[
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: Color(
+                                                vehicle.color,
+                                              ).withValues(alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
-                                            const SizedBox(width: 4),
+                                            child: Icon(
+                                              Icons.directions_car,
+                                              size: 14,
+                                              color: Color(vehicle.color),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            '${vehicle.year} ${vehicle.make} ${vehicle.model}',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color:
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                    ],
+
+                                    // Description
+                                    if (service.description.isNotEmpty) ...[
+                                      Text(
+                                        service.description,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                    ],
+
+                                    // Service Location
+                                    if (service.serviceLocation != null &&
+                                        service
+                                            .serviceLocation!
+                                            .isNotEmpty) ...[
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            size: 14,
+                                            color: Color(0xFF2E7CF6),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              service.serviceLocation!,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                    ],
+
+                                    // Cost and Odometer
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Cost
+                                        Row(
+                                          children: [
                                             Text(
                                               'RM ${service.cost.toStringAsFixed(2)}',
-                                              style: const TextStyle(
-                                                fontSize: 14,
+                                              style: TextStyle(
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.white,
+                                                color:
+                                                    Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ),
 
-                                      // Odometer
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF252D38),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Row(
+                                        // Odometer
+                                        Row(
                                           children: [
-                                            const Icon(
+                                            Icon(
                                               Icons.speed,
-                                              size: 16,
-                                              color: Color(0xFF2E7CF6),
+                                              size: 14,
+                                              color:
+                                                  Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 6),
                                             Text(
                                               '${NumberFormat('#,###').format(service.odometerReading)} km',
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF8B95A5),
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color:
+                                                    Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
 
-                                  // Reminder indicator
-                                  if (service.hasReminder)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 12),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 8,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(
-                                            0xFF2E7CF6,
-                                          ).withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
+                                    // Reminder indicator
+                                    if (service.hasReminder)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
                                           ),
-                                          border: Border.all(
+                                          decoration: BoxDecoration(
                                             color: const Color(
                                               0xFF2E7CF6,
-                                            ).withValues(alpha: 0.3),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.notifications_active,
-                                              size: 16,
-                                              color: Color(0xFF2E7CF6),
+                                            ).withValues(alpha: 0.05),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
                                             ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                service.reminderDate != null
-                                                    ? 'Next: ${DateFormat('MMM dd, yyyy').format(service.reminderDate!)}'
-                                                    : service
-                                                            .reminderOdometer !=
-                                                        null
-                                                    ? 'Next: ${NumberFormat('#,###').format(service.reminderOdometer)} km'
-                                                    : 'Reminder set',
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0xFF2E7CF6),
-                                                  fontWeight: FontWeight.w500,
+                                            border: Border.all(
+                                              color: const Color(
+                                                0xFF2E7CF6,
+                                              ).withValues(alpha: 0.1),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.notifications_active,
+                                                size: 14,
+                                                color: Color(0xFF2E7CF6),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Flexible(
+                                                child: Text(
+                                                  service.reminderDate != null
+                                                      ? 'Next: ${DateFormat('MMM dd, yyyy').format(service.reminderDate!)}'
+                                                      : service
+                                                              .reminderOdometer !=
+                                                          null
+                                                      ? 'Next: ${NumberFormat('#,###').format(service.reminderOdometer)} km'
+                                                      : 'Reminder set',
+                                                  style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color: Color(0xFF2E7CF6),
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),

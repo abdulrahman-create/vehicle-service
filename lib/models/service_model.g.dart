@@ -17,25 +17,27 @@ class ServiceRecordAdapter extends TypeAdapter<ServiceRecord> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return ServiceRecord(
-      id: fields[0] as String,
-      vehicleId: fields[1] as String,
+      id: fields[0] == null ? '' : fields[0] as String,
+      vehicleId: fields[1] == null ? '' : fields[1] as String,
       date: fields[2] as DateTime,
-      description: fields[3] as String,
-      cost: fields[4] as double,
-      odometerReading: fields[5] as int,
-      serviceType: fields[6] as String,
+      description: fields[3] == null ? '' : fields[3] as String,
+      cost: fields[4] == null ? 0.0 : fields[4] as double,
+      odometerReading: fields[5] == null ? 0 : fields[5] as int,
+      serviceType: fields[6] == null ? '' : fields[6] as String,
       reminderDate: fields[7] as DateTime?,
       reminderOdometer: fields[8] as int?,
-      hasReminder: fields[9] as bool? ?? false,
+      hasReminder: fields[9] == null ? false : fields[9] as bool,
       serviceLocation: fields[10] as String?,
       photosPaths: (fields[11] as List?)?.cast<String>(),
+      latitude: fields[12] as double?,
+      longitude: fields[13] as double?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ServiceRecord obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -59,7 +61,11 @@ class ServiceRecordAdapter extends TypeAdapter<ServiceRecord> {
       ..writeByte(10)
       ..write(obj.serviceLocation)
       ..writeByte(11)
-      ..write(obj.photosPaths);
+      ..write(obj.photosPaths)
+      ..writeByte(12)
+      ..write(obj.latitude)
+      ..writeByte(13)
+      ..write(obj.longitude);
   }
 
   @override

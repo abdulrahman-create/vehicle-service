@@ -17,14 +17,14 @@ class VehicleAdapter extends TypeAdapter<Vehicle> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Vehicle(
-      id: fields[0] as String,
-      make: fields[1] as String,
-      model: fields[2] as String,
-      year: fields[3] as int,
-      vin: fields[4] as String,
-      currentMileage: fields[5] as int,
+      id: fields[0] == null ? '' : fields[0] as String,
+      make: fields[1] == null ? '' : fields[1] as String,
+      model: fields[2] == null ? '' : fields[2] as String,
+      year: fields[3] == null ? 0 : fields[3] as int,
+      vin: fields[4] == null ? '' : fields[4] as String,
+      currentMileage: fields[5] == null ? 0 : fields[5] as int,
       imagePath: fields[6] as String?,
-      color: fields[7] as int? ?? 0xFF2E7CF6,
+      color: fields[7] == null ? 4281236726 : fields[7] as int,
     );
   }
 

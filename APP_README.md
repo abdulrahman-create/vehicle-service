@@ -19,13 +19,17 @@ A Flutter mobile application for tracking vehicle maintenance and service record
   - **Add historical records** - No restrictions on odometer readings (can add old service records)
   - **Edit existing service records** - Tap any service record to edit all details
   - **Swipe to delete** - Swipe left on any service record to delete with confirmation
-  - **Service Location** - Record where service was performed (manual entry or GPS location)
+  - **Service Location** - Record where service was performed (manual entry, GPS, or Map Pin)
+  - **Interactive Map Picker** - Choose service locations by pinning them on a map with a crosshair and address search
+  - **Map Navigation** - Tap any saved service location to launch it in external map apps (Google Maps, Apple Maps)
   - **GPS Integration** - Use current location button to auto-fill service location
   - **Service Reminders** - Set reminders for upcoming services by date or odometer reading
   - Calculate total maintenance cost per vehicle in Malaysian Ringgit (MYR)
   - Service types include: Oil Change, Tire Rotation, Tire Change, Brake Service, Engine Repair, Transmission Service, Battery Replacement, Air Filter, Coolant, Inspection, and Other
 
-- **Service Reminders**
+- **Service Reminders & Notifications**
+  - **Smart Push Notifications** - Receive local notifications on your device for upcoming services
+  - **Automatic Scheduling** - Reminders are automatically scheduled for 9:00 AM on the target date
   - **Set Reminders** - Add reminders when creating service records
   - **Date-based Reminders** - Get reminded on a specific date for next service
   - **Odometer-based Reminders** - Set reminders for specific mileage
@@ -34,8 +38,12 @@ A Flutter mobile application for tracking vehicle maintenance and service record
   - **Overdue Indicators** - Visual alerts for overdue services
   - **Timeline Integration** - Reminder indicators shown in service timeline
 
-- **User Interface**
+- **User Interface & Experience**
   - Material Design 3 with **Dark/Light Theme Toggle**
+  - **High-Contrast Design** - Specialized Light Mode auditing for better outdoor visibility
+  - **Connected Timeline** - A glowing, connected vertical timeline showing your vehicle's history across all cars
+  - **Filtered Analytics** - Filter service history and costs by specific Year and Month
+  - **Legacy Data Stability** - Intelligent database adapters that gracefully handle missing fields in older app versions
   - **Settings Screen** - Configure app preferences including theme selection
   - **Theme Options** - Choose between Light, Dark, or System theme
   - **Persistent Theme** - Selected theme saves and persists between sessions
@@ -79,9 +87,13 @@ lib/
 │   └── service_model.g.dart           # Generated Hive adapter
 ├── services/
 │   ├── hive_service.dart              # Hive database service (CRUD operations)
-│   └── location_service.dart          # GPS location service (get current location, geocoding)
+│   ├── firestore_service.dart         # Cloud sync and backup service
+│   ├── location_service.dart          # GPS location service (get current location, geocoding)
+│   ├── notification_service.dart      # Local push notification scheduling
+│   └── image_service.dart             # Photo storage and compression logic
 ├── providers/
 │   ├── vehicle_provider.dart          # Riverpod state management
+│   ├── auth_provider.dart             # Firebase Authentication logic
 │   └── theme_provider.dart            # Theme state management with SharedPreferences
 ├── theme/
 │   └── app_theme.dart                 # Light and dark theme definitions
@@ -93,9 +105,12 @@ lib/
     ├── edit_vehicle_screen.dart       # Edit vehicle details, photo, and color
     ├── add_service_screen.dart        # Add service record form with reminder options
     ├── edit_service_screen.dart       # Edit existing service record form
+    ├── map_picker_screen.dart         # Interactive map location picker
     ├── service_timeline_screen.dart   # Chronological timeline view of all services with search
+    ├── service_photo_viewer_screen.dart # Pinch-to-zoom photo gallery
     ├── reminders_screen.dart          # Upcoming reminders view with overdue indicators
-    └── settings_screen.dart           # App settings with theme selector
+    ├── settings_screen.dart           # App settings with theme selector
+    └── signup_screen.dart             # Cloud sync account creation
 ```
 
 ## Getting Started

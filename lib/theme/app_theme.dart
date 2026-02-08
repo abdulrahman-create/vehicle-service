@@ -15,17 +15,24 @@ class AppTheme {
       onSurface: Color(0xFF1A1F28),
       onError: Colors.white,
     ),
-    scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+    scaffoldBackgroundColor: const Color(0xFFF5F7FA),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF2E7CF6),
-      foregroundColor: Colors.white,
+      backgroundColor: Colors.white,
+      foregroundColor: Color(0xFF1A1F28),
       elevation: 0,
+      iconTheme: IconThemeData(color: Color(0xFF1A1F28)),
+      titleTextStyle: TextStyle(
+        color: Color(0xFF1A1F28),
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
     ),
     cardTheme: const CardThemeData(
       color: Colors.white,
-      elevation: 2,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(color: Color(0xFFE1E5EB), width: 1),
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -34,19 +41,22 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.grey[100],
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE1E5EB)),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFE1E5EB)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFF2E7CF6), width: 2),
       ),
+      labelStyle: const TextStyle(color: Color(0xFF8B95A5)),
+      hintStyle: const TextStyle(color: Color(0xFF8B95A5)),
     ),
   );
 
@@ -55,26 +65,27 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.dark,
     colorScheme: const ColorScheme.dark(
-      primary: Color(0xFF4D9FFF),
-      secondary: Color(0xFF66BB6A),
-      surface: Color(0xFF1E1E1E),
+      primary: Color(0xFF2E7CF6),
+      secondary: Color(0xFF4CAF50),
+      surface: Color(0xFF1A1F28),
       error: Color(0xFFEF5350),
-      onPrimary: Colors.black,
-      onSecondary: Colors.black,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
       onSurface: Colors.white,
       onError: Colors.black,
     ),
-    scaffoldBackgroundColor: const Color(0xFF121212),
+    scaffoldBackgroundColor: const Color(0xFF0F1218),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1E1E1E),
+      backgroundColor: Color(0xFF1A1F28),
       foregroundColor: Colors.white,
       elevation: 0,
     ),
-    cardTheme: CardThemeData(
-      color: const Color(0xFF1E1E1E),
-      elevation: 2,
+    cardTheme: const CardThemeData(
+      color: Color(0xFF1A1F28),
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(color: Color(0xFF252D38), width: 1),
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(

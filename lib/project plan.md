@@ -38,6 +38,11 @@ All models must be annotated for Hive serialization.
 | cost | double | 4 | Total cost of the service. |
 | odometerReading | int | 5 | Mileage at the time of service. |
 | serviceType | String | 6 | Type of service (e.g., 'Oil Change', 'Tires', 'Repair'). |
+| hasReminder | bool | 9 | Whether a reminder is enabled. |
+| serviceLocation | String? | 10 | Location name or address. |
+| photosPaths | List<String>? | 11 | Attached photo file paths. |
+| latitude | double? | 12 | GPS coordinate. |
+| longitude | double? | 13 | GPS coordinate. |
 
 ## **2\. Data and Service Layer Implementation**
 

@@ -1,0 +1,29 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "vehical-service-d8469",
+          "appId": "1:811168049036:android:ee0bbd299505bd4c19d8a9",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "vehical-service-d8469",
+          "configurations": {
+            "android": "1:811168049036:android:ee0bbd299505bd4c19d8a9",
+            "ios": "1:811168049036:ios:383efd46e5574a4b19d8a9"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "singleProjectMode": true
+  }
+}

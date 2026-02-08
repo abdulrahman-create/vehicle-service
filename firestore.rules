@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User Profiles, Vehicles and Services are all scoped under the user's UID
+    // for maximum security (User Isolation)
+    match /users/{userId} {
+      // Allow user to read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Inherit user isolation for subcollections (Vehicles & Services)
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Global fallback: Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

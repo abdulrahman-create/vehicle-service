@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:location_picker_flutter_map/location_picker_flutter_map.dart'
+    show LatLong;
 import '../models/vehicle_model.dart';
 import '../models/service_model.dart';
 import '../providers/vehicle_provider.dart';
 import '../services/location_service.dart';
 import '../services/image_service.dart';
 import '../widgets/service_photo_gallery.dart';
+import 'map_picker_screen.dart';
 
 class EditServiceScreen extends ConsumerStatefulWidget {
   final Vehicle vehicle;
@@ -33,6 +36,11 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
   late TextEditingController _locationController;
   late DateTime _selectedDate;
   bool _isLoadingLocation = false;
+  double? _latitude;
+  double? _longitude;
+  late bool _hasReminder;
+  late DateTime? _reminderDate;
+  late int? _reminderOdometer;
   late List<String> _photoPaths;
   final List<String> _newPhotoPaths = [];
   final ImagePicker _imagePicker = ImagePicker();
@@ -70,7 +78,12 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
     _locationController = TextEditingController(
       text: widget.service.serviceLocation ?? '',
     );
+    _latitude = widget.service.latitude;
+    _longitude = widget.service.longitude;
     _selectedDate = widget.service.date;
+    _hasReminder = widget.service.hasReminder;
+    _reminderDate = widget.service.reminderDate;
+    _reminderOdometer = widget.service.reminderOdometer;
     _photoPaths = List<String>.from(widget.service.photosPaths ?? []);
   }
 
@@ -95,6 +108,45 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectReminderDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate:
+          _reminderDate ?? DateTime.now().add(const Duration(days: 90)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _reminderDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickFromMap() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => MapPickerScreen(
+              initialLocation:
+                  (_latitude != null && _longitude != null)
+                      ? LatLong(_latitude!, _longitude!)
+                      : null,
+            ),
+      ),
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        _locationController.text = result['address'];
+        _latitude = result['latitude'];
+        _longitude = result['longitude'];
       });
     }
   }
@@ -248,24 +300,21 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
         cost: double.parse(_costController.text.trim()),
         odometerReading: int.parse(_odometerController.text.trim()),
         serviceType: _serviceTypeController.text.trim(),
-        hasReminder: widget.service.hasReminder,
-        reminderDate: widget.service.reminderDate,
-        reminderOdometer: widget.service.reminderOdometer,
+        hasReminder: _hasReminder,
+        reminderDate: _hasReminder ? _reminderDate : null,
+        reminderOdometer: _hasReminder ? _reminderOdometer : null,
         serviceLocation:
             _locationController.text.trim().isNotEmpty
                 ? _locationController.text.trim()
                 : null,
+        latitude: _latitude,
+        longitude: _longitude,
         photosPaths: finalPhotoPaths.isNotEmpty ? finalPhotoPaths : null,
       );
 
-      final hiveService = ref.read(hiveServiceProvider);
-      await hiveService.updateServiceRecord(updatedService);
-
-      // Force refresh of vehicle list
-      ref.invalidate(vehicleProvider);
-
-      // Small delay to ensure refresh completes
-      await Future.delayed(const Duration(milliseconds: 100));
+      await ref
+          .read(vehicleProvider.notifier)
+          .updateServiceRecord(updatedService);
 
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
@@ -444,25 +493,118 @@ class _EditServiceScreenState extends ConsumerState<EditServiceScreen> {
                 hintText: 'Enter service location',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.location_on),
-                suffixIcon:
-                    _isLoadingLocation
-                        ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                        : IconButton(
-                          icon: const Icon(Icons.my_location),
-                          tooltip: 'Use current location',
-                          onPressed: _getCurrentLocation,
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_isLoadingLocation)
+                      const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
+                      )
+                    else
+                      IconButton(
+                        icon: const Icon(Icons.my_location),
+                        tooltip: 'Current location',
+                        onPressed: _getCurrentLocation,
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.map_outlined),
+                      tooltip: 'Pick from map',
+                      onPressed: _pickFromMap,
+                    ),
+                  ],
+                ),
               ),
               maxLines: 2,
               textCapitalization: TextCapitalization.words,
             ),
+            const SizedBox(height: 24),
+
+            // Reminder Section
+            const Text(
+              'Service Reminder',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              title: const Text('Enable Reminder'),
+              subtitle: const Text('Get notified when next service is due'),
+              value: _hasReminder,
+              onChanged: (value) {
+                setState(() {
+                  _hasReminder = value;
+                  if (_hasReminder &&
+                      _reminderDate == null &&
+                      _reminderOdometer == null) {
+                    // Default reminder: 3 months or 5000 miles/km
+                    _reminderDate = DateTime.now().add(
+                      const Duration(days: 90),
+                    );
+                    _reminderOdometer =
+                        int.parse(
+                          _odometerController.text.isNotEmpty
+                              ? _odometerController.text
+                              : '0',
+                        ) +
+                        5000;
+                  }
+                });
+              },
+              secondary: Icon(
+                _hasReminder
+                    ? Icons.notifications_active
+                    : Icons.notifications_none,
+                color:
+                    _hasReminder ? Theme.of(context).colorScheme.primary : null,
+              ),
+            ),
+            if (_hasReminder) ...[
+              const SizedBox(height: 16),
+              // Reminder Date
+              InkWell(
+                onTap: _selectReminderDate,
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Next Service Date',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.calendar_today),
+                  ),
+                  child: Text(
+                    _reminderDate != null
+                        ? dateFormat.format(_reminderDate!)
+                        : 'Select Date',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Reminder Odometer
+              TextFormField(
+                initialValue: _reminderOdometer?.toString() ?? '',
+                decoration: const InputDecoration(
+                  labelText: 'Next Service Odometer',
+                  hintText: 'Enter future odometer reading',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.speed),
+                  suffixText: 'miles',
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (value) {
+                  _reminderOdometer = int.tryParse(value.trim());
+                },
+                validator: (value) {
+                  if (_hasReminder && (value == null || value.trim().isEmpty)) {
+                    return 'Please enter the future odometer reading';
+                  }
+                  return null;
+                },
+              ),
+            ],
             const SizedBox(height: 24),
             // Photo Gallery Section
             ServicePhotoGallery(

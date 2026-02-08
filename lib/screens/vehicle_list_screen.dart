@@ -13,11 +13,23 @@ class VehicleListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vehicles = ref.watch(vehicleProvider);
+    final isSyncing = ref.watch(isSyncingProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Vehicles'),
         actions: [
+          if (isSyncing)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
@@ -53,13 +65,21 @@ class VehicleListScreen extends ConsumerWidget {
                   ],
                 ),
               )
-              : ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: vehicles.length,
-                itemBuilder: (context, index) {
-                  final vehicle = vehicles[index];
-                  return _VehicleCard(vehicle: vehicle);
-                },
+              : CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildSummaryCard(context, vehicles, ref),
+                    ),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final vehicle = vehicles[index];
+                      return _VehicleCard(vehicle: vehicle);
+                    }, childCount: vehicles.length),
+                  ),
+                ],
               ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -69,6 +89,111 @@ class VehicleListScreen extends ConsumerWidget {
           );
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(
+    BuildContext context,
+    List<Vehicle> vehicles,
+    WidgetRef ref,
+  ) {
+    double totalAllTime = 0;
+    for (var v in vehicles) {
+      totalAllTime += ref.watch(totalCostProvider(v.id));
+    }
+
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primary,
+              Theme.of(context).colorScheme.secondary,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Maintenance Summary',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Icon(
+                  Icons.query_stats,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                _buildSummaryStat(
+                  'Total Vehicles',
+                  vehicles.length.toString(),
+                  Icons.directions_car,
+                ),
+                Container(
+                  height: 40,
+                  width: 1,
+                  color: Colors.white.withValues(alpha: 0.3),
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                ),
+                _buildSummaryStat(
+                  'Total Investment',
+                  'RM ${totalAllTime.toStringAsFixed(2)}',
+                  Icons.payments_outlined,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryStat(String label, String value, IconData icon) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.7)),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -112,18 +237,22 @@ class _VehicleCard extends ConsumerWidget {
                             File(vehicle.imagePath!),
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
+                              return Icon(
                                 Icons.directions_car,
                                 size: 36,
-                                color: Colors.white,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.5),
                               );
                             },
                           ),
                         )
-                        : const Icon(
+                        : Icon(
                           Icons.directions_car,
                           size: 36,
-                          color: Colors.white,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
               ),
               const SizedBox(width: 16),
@@ -133,34 +262,35 @@ class _VehicleCard extends ConsumerWidget {
                   children: [
                     Text(
                       '${vehicle.year} - ${vehicle.make}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF8B95A5),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       vehicle.model,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.access_time,
                           size: 14,
-                          color: Color(0xFF8B95A5),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Last Service: Aug 2023',
-                          style: const TextStyle(
+                          'Last Mileage: ${vehicle.currentMileage} km',
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF8B95A5),
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -168,7 +298,10 @@ class _VehicleCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Color(0xFF8B95A5)),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),

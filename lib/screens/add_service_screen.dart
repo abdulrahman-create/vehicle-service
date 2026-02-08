@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:location_picker_flutter_map/location_picker_flutter_map.dart'
+    show LatLong;
 import '../models/vehicle_model.dart';
 import '../models/service_model.dart';
 import '../providers/vehicle_provider.dart';
 import '../services/location_service.dart';
 import '../services/image_service.dart';
 import '../widgets/service_photo_gallery.dart';
+import 'map_picker_screen.dart';
 
 class AddServiceScreen extends ConsumerStatefulWidget {
   final Vehicle vehicle;
@@ -33,6 +36,8 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
   DateTime? _reminderDate;
   int? _reminderOdometer;
   bool _isLoadingLocation = false;
+  double? _latitude;
+  double? _longitude;
   final List<String> _photoPaths = [];
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -88,6 +93,29 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
     if (picked != null) {
       setState(() {
         _reminderDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickFromMap() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => MapPickerScreen(
+              initialLocation:
+                  (_latitude != null && _longitude != null)
+                      ? LatLong(_latitude!, _longitude!)
+                      : null,
+            ),
+      ),
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      setState(() {
+        _locationController.text = result['address'];
+        _latitude = result['latitude'];
+        _longitude = result['longitude'];
       });
     }
   }
@@ -232,6 +260,8 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
             _locationController.text.trim().isNotEmpty
                 ? _locationController.text.trim()
                 : null,
+        latitude: _latitude,
+        longitude: _longitude,
         photosPaths: savedPhotoPaths,
       );
 
@@ -413,21 +443,31 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                 hintText: 'Enter service location',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.location_on),
-                suffixIcon:
-                    _isLoadingLocation
-                        ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                        : IconButton(
-                          icon: const Icon(Icons.my_location),
-                          tooltip: 'Use current location',
-                          onPressed: _getCurrentLocation,
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_isLoadingLocation)
+                      const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
+                      )
+                    else
+                      IconButton(
+                        icon: const Icon(Icons.my_location),
+                        tooltip: 'Current location',
+                        onPressed: _getCurrentLocation,
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.map_outlined),
+                      tooltip: 'Pick from map',
+                      onPressed: _pickFromMap,
+                    ),
+                  ],
+                ),
               ),
               maxLines: 2,
               textCapitalization: TextCapitalization.words,
@@ -443,7 +483,7 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
             const SizedBox(height: 24),
             // Reminder Section
             Card(
-              color: const Color(0xFF1A1F28),
+              color: Theme.of(context).colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -456,9 +496,10 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                           color: Color(0xFF2E7CF6),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Service Reminder',
                           style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -508,8 +549,10 @@ class _AddServiceScreenState extends ConsumerState<AddServiceScreen> {
                               fontSize: 16,
                               color:
                                   _reminderDate != null
-                                      ? Colors.white
-                                      : const Color(0xFF8B95A5),
+                                      ? Theme.of(context).colorScheme.onSurface
+                                      : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),

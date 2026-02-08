@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'services/hive_service.dart';
-import 'screens/home_screen.dart';
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
+import 'widgets/auth_wrapper.dart';
+import 'firebase_options.dart';
 
-// Global instance of HiveService
+// Global instances
 late final HiveService hiveService;
+final notificationService = NotificationService();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    // Initialize Notification Service
+    await notificationService.init();
+
     // Initialize Hive
     hiveService = HiveService();
     await hiveService.init();
@@ -40,7 +52,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const HomeScreen(),
+      home: const AuthWrapper(),
     );
   }
 }

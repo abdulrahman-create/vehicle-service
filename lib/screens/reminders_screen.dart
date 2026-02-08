@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../main.dart';
+import '../providers/vehicle_provider.dart';
+import 'edit_service_screen.dart';
 import 'settings_screen.dart';
 
 class RemindersScreen extends ConsumerWidget {
@@ -11,6 +13,9 @@ class RemindersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch vehicles to trigger rebuild on service updates
+    ref.watch(vehicleProvider);
+
     // Get all service records with reminders
     final allServiceRecords = hiveService.getAllServiceRecords();
     final upcomingReminders =
@@ -83,7 +88,7 @@ class RemindersScreen extends ConsumerWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 32),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A1F28),
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -99,7 +104,7 @@ class RemindersScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey[300],
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -108,7 +113,10 @@ class RemindersScreen extends ConsumerWidget {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[500],
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                               height: 1.5,
                             ),
                           ),
@@ -130,7 +138,7 @@ class RemindersScreen extends ConsumerWidget {
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
-                    color: const Color(0xFF1A1F28),
+                    color: Theme.of(context).colorScheme.surface,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -142,10 +150,11 @@ class RemindersScreen extends ConsumerWidget {
                               Expanded(
                                 child: Text(
                                   service.serviceType,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ),
@@ -155,6 +164,7 @@ class RemindersScreen extends ConsumerWidget {
                                     horizontal: 8,
                                     vertical: 4,
                                   ),
+                                  margin: const EdgeInsets.only(right: 8),
                                   decoration: BoxDecoration(
                                     color: const Color(
                                       0xFFFF5252,
@@ -170,6 +180,36 @@ class RemindersScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
+                              // Edit Button
+                              IconButton(
+                                constraints: const BoxConstraints(),
+                                padding: EdgeInsets.zero,
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  size: 20,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                ),
+                                onPressed: () {
+                                  if (vehicle != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => EditServiceScreen(
+                                              vehicle: vehicle,
+                                              service: service,
+                                            ),
+                                      ),
+                                    ).then((_) {
+                                      // Force rebuild if ref is available in a ConsumerWidget
+                                      // (building in background via provider)
+                                    });
+                                  }
+                                },
+                              ),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -189,9 +229,12 @@ class RemindersScreen extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 Text(
                                   '${vehicle.year} ${vehicle.make} ${vehicle.model}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF8B95A5),
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ],
@@ -282,9 +325,12 @@ class RemindersScreen extends ConsumerWidget {
                           const SizedBox(height: 12),
                           Text(
                             'Last serviced: ${DateFormat('MMM dd, yyyy').format(service.date)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF8B95A5),
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],

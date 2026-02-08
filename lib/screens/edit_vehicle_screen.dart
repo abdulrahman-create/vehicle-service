@@ -119,10 +119,10 @@ class _EditVehicleScreenState extends ConsumerState<EditVehicleScreen> {
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: const Color(0xFF1A1F28),
-            title: const Text(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            title: Text(
               'Select Image Source',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -132,9 +132,11 @@ class _EditVehicleScreenState extends ConsumerState<EditVehicleScreen> {
                     Icons.photo_library,
                     color: Color(0xFF2E7CF6),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Gallery',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -146,9 +148,11 @@ class _EditVehicleScreenState extends ConsumerState<EditVehicleScreen> {
                     Icons.camera_alt,
                     color: Color(0xFF2E7CF6),
                   ),
-                  title: const Text(
+                  title: Text(
                     'Camera',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -158,9 +162,11 @@ class _EditVehicleScreenState extends ConsumerState<EditVehicleScreen> {
                 if (_imagePath != null)
                   ListTile(
                     leading: const Icon(Icons.delete, color: Colors.red),
-                    title: const Text(
+                    title: Text(
                       'Remove Image',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     onTap: () {
                       Navigator.pop(context);
@@ -215,9 +221,12 @@ class _EditVehicleScreenState extends ConsumerState<EditVehicleScreen> {
               child: Container(
                 height: 200,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1F28),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF2E7CF6), width: 2),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    width: 1,
+                  ),
                 ),
                 child:
                     _imagePath != null
@@ -271,12 +280,12 @@ class _EditVehicleScreenState extends ConsumerState<EditVehicleScreen> {
             const SizedBox(height: 24),
 
             // Color Picker
-            const Text(
+            Text(
               'Vehicle Color',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
